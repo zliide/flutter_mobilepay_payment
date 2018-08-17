@@ -2,12 +2,27 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 
-class FlutterMobilepayPayment {
+enum Country {
+  Denmark,
+  Finland,
+  Norway,
+}
+
+enum CaptureType {
+  Reserve,
+  Capture,
+  PartialCapture,
+}
+
+class FlutterMobilePayPayment {
   static const MethodChannel _channel =
       const MethodChannel('flutter_mobilepay_payment');
 
-  static Future<String> get platformVersion async {
-    final String version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
+  static Future<void> init(String merchantId, Country country, {CaptureType captureType: CaptureType.Capture}) async {
+    await _channel.invokeMethod('init', {
+      'merchantId': merchantId,
+      'country': country.index,
+      'captureType': captureType.index,
+    });
   }
 }

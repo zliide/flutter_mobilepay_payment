@@ -12,7 +12,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
+  String _status;
 
   @override
   void initState() {
@@ -22,12 +22,12 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    String platformVersion;
+    String status = "MobilePay AppSwitch initialized.";
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
-      platformVersion = await FlutterMobilepayPayment.platformVersion;
+      await FlutterMobilePayPayment.init("APPDK0000000000", Country.Denmark, captureType: CaptureType.Reserve);
     } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
+      status = 'Failed to initialize AppSwitch.';
     }
 
     // If the widget was removed from the tree while the asynchronous platform
@@ -36,7 +36,7 @@ class _MyAppState extends State<MyApp> {
     if (!mounted) return;
 
     setState(() {
-      _platformVersion = platformVersion;
+      _status = status;
     });
   }
 
@@ -48,7 +48,7 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: new Center(
-          child: new Text('Running on: $_platformVersion\n'),
+          child: new Text('$_status\n'),
         ),
       ),
     );
