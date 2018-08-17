@@ -6,38 +6,21 @@ import 'package:flutter_mobilepay_payment/flutter_mobilepay_payment.dart';
 void main() => runApp(new MyApp());
 
 class MyApp extends StatefulWidget {
+  static AppSwitchPayment _mobilePay = AppSwitchPayment("APPDK0000000000", Country.Denmark, captureType: CaptureType.Reserve);
+
   @override
-  _MyAppState createState() => new _MyAppState();
+  _MyAppState createState() => new _MyAppState(_mobilePay);
 }
 
 class _MyAppState extends State<MyApp> {
-  String _status;
+  AppSwitchPayment mobilePay;
+  String _status = "Ready";
 
-  @override
-  void initState() {
-    super.initState();
-    initPlatformState();
-  }
-
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    String status = "MobilePay AppSwitch initialized.";
-
-    await FlutterMobilePayPayment.init("APPDK0000000000", Country.Denmark, captureType: CaptureType.Reserve);
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    setState(() {
-      _status = status;
-    });
-  }
+  _MyAppState(this.mobilePay);
 
   Future<void> pay() async {
     try {
-      var payment = await FlutterMobilePayPayment.pay("86715c57-8840-4a6f-af5f-07ee89107ece", 10.0);
+      var payment = await mobilePay.pay("86715c57-8840-4a6f-af5f-07ee89107ece", 10.0);
 
       // If the widget was removed from the tree while the asynchronous platform
       // message was in flight, we want to discard the reply rather than calling
@@ -49,9 +32,9 @@ class _MyAppState extends State<MyApp> {
       }
 
       setState(() {
-        _status = "Payment completed (ref. ${payment.transactionId}).";
+        _status = "Payment completed (ref. ${payment.transactionId.substring(0, 8)}).";
       });
-    } on PaymentError catch(e) {
+    } on PaymentError catch (e) {
       if (!mounted) return;
       setState(() {
         _status = "Payment error: ${e.message} (code ${e.errorCode}).";
@@ -69,10 +52,13 @@ class _MyAppState extends State<MyApp> {
         body: Center(
           child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [Text('$_status\n'), FlatButton(
-              child: Text('Pay'),
-              onPressed: pay,
-            )]
+              children: [
+                Text('$_status\n'),
+                FlatButton(
+                  child: Text('Pay'),
+                  onPressed: pay,
+                )
+              ]
           ),
         ),
       ),

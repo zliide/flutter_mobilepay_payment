@@ -27,19 +27,24 @@ class PaymentResult {
   PaymentResult(this.transactionId, this.amount);
 }
 
-class FlutterMobilePayPayment {
-  static const MethodChannel _channel =
-  const MethodChannel('flutter_mobilepay_payment');
+class AppSwitchPayment {
+  MethodChannel _channel;
+  static Future<void> _initFuture;
 
-  static Future<void> init(String merchantId, Country country, {CaptureType captureType: CaptureType.Capture}) async {
-    await _channel.invokeMethod('init', {
+  AppSwitchPayment(String merchantId, Country country, {CaptureType captureType: CaptureType.Capture}) {
+    if(_initFuture != null) {
+      throw StateError("Multiple AppSwitchPayment instances not supported.");
+    }
+    _channel = const MethodChannel('flutter_mobilepay_payment');
+    _initFuture = _channel.invokeMethod('init', {
       'merchantId': merchantId,
       'country': country.index,
       'captureType': captureType.index,
     });
   }
 
-  static Future<PaymentResult> pay(String orderId, double amount) async {
+  Future<PaymentResult> pay(String orderId, double amount) async {
+    await _initFuture;
     Map<dynamic, dynamic> result = await _channel.invokeMethod('pay', {
       'orderId': orderId,
       'amount': amount,
