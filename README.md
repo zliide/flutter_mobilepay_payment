@@ -38,6 +38,10 @@ If `payment` is `null`, that means that the payment was cancelled, i.e. the user
 If an error occurs, an exception will be thrown with the corresponding [error code](https://github.com/MobilePayDev/MobilePay-AppSwitch-SDK/wiki/Error-handling).
 Otherwise, the `payment` object will contain the paid amount and the transaction ID.
 
+## MobilePay
+
+The plugin has MobilePay AppSwitch SDK v. 1.8.1 built in. See [here](https://github.com/MobilePayDev/MobilePay-AppSwitch-SDK/tree/master/sdk/Android) if it's the latest one.
+
 ## Flutter
 
 For help getting started with Flutter, view our online
