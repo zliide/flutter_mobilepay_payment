@@ -42,6 +42,11 @@ Otherwise, the `payment` object will contain the paid amount and the transaction
 
 The plugin has MobilePay AppSwitch SDK v. 1.8.1 built in. See [here](https://github.com/MobilePayDev/MobilePay-AppSwitch-SDK/tree/master/sdk/Android) if it's the latest one.
 
+## Troubleshooting
+
+Q: I got a lovely `java.lang.AbstractMethodError (no error message)` from gradle after installing the package.
+A: That's been seen when using Kotlin 1.2.50, and it was fixed by upgrading to 1.2.60.
+
 ## Flutter
 
 For help getting started with Flutter, view our online
