@@ -14,4 +14,4 @@ flutter:
     pluginClass: FlutterMobilepayPaymentPlugin
 
 environment:
-  sdk: ">=1.19.0 <2.0.0"
+  sdk: ">=2.0.0-dev.28.0 <3.0.0"
