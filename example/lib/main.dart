@@ -6,7 +6,10 @@ import 'package:flutter_mobilepay_payment/flutter_mobilepay_payment.dart';
 void main() => runApp(new MyApp());
 
 class MyApp extends StatefulWidget {
-  static AppSwitchPayment _mobilePay = AppSwitchPayment("APPDK0000000000", Country.Denmark, captureType: CaptureType.Reserve);
+  static AppSwitchPayment _mobilePay = AppSwitchPayment(
+      "APPDK0000000000",
+      Country.Denmark,
+      captureType: CaptureType.Reserve);
 
   @override
   _MyAppState createState() => new _MyAppState(_mobilePay);
@@ -20,7 +23,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> pay() async {
     try {
-      var payment = await mobilePay.pay("86715c57-8840-4a6f-af5f-07ee89107ece", 10.0);
+      final payment = await mobilePay.pay("86715c57-8840-4a6f-af5f-07ee89107ece", 10.0);
 
       // If the widget was removed from the tree while the asynchronous platform
       // message was in flight, we want to discard the reply rather than calling
