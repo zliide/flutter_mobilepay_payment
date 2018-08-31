@@ -21,6 +21,34 @@ class PaymentError extends Error {
   String toString() => message;
 }
 
+enum ErrorCategory {
+  Generic,
+  Timeout,
+  MobilePayAppOutOfDate,
+  MerchantAppOutOfDate,
+  InsufficientFunds,
+}
+
+Map<int, ErrorCategory> _categories = {
+  2: ErrorCategory.Generic,
+  3: ErrorCategory.MobilePayAppOutOfDate,
+  6: ErrorCategory.Timeout,
+  7: ErrorCategory.InsufficientFunds,
+  8: ErrorCategory.Timeout,
+  9: ErrorCategory.Generic,
+  10: ErrorCategory.MerchantAppOutOfDate,
+  11: ErrorCategory.Generic,
+};
+
+class PaymentException implements Exception {
+  final String message;
+  final int errorCode;
+  final ErrorCategory category;
+  PaymentException(this.message, this.errorCode)
+      : category = _categories[errorCode];
+  String toString() => message;
+}
+
 class PaymentResult {
   final String transactionId;
   final double amount;
@@ -50,8 +78,13 @@ class AppSwitchPayment {
       'amount': amount,
     });
     bool completed = result["completed"];
-    if (!completed && result.containsKey("errorMessage")) {
-      throw PaymentError(result["errorMessage"], result["errorCode"]);
+    if (!completed && result.containsKey("errorCode")) {
+      if ([1, 4, 5, 11].contains(result["errorCode"])) {
+        throw PaymentError(result["errorMessage"], result["errorCode"]);
+      }
+      else {
+        throw PaymentException(result["errorMessage"], result["errorCode"]);
+      }
     }
     if (!completed) {
       return null;
