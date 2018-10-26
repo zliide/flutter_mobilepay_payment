@@ -49,14 +49,27 @@ class PaymentException implements Exception {
   String toString() => message;
 }
 
+final _channel = const MethodChannel('flutter_mobilepay_payment');
+
 class PaymentResult {
+  final String orderId;
   final String transactionId;
   final double amount;
-  PaymentResult(this.transactionId, this.amount);
+  PaymentResult(this.orderId, this.transactionId, this.amount);
+
+  Future complete() => _channel.invokeMethod('paymentComplete');
+}
+
+Future<PaymentResult> incompletePayment() async {
+  final result = await _channel.invokeMethod('incompletePayment');
+  if (result == null) {
+    return null;
+  }
+  return PaymentResult(
+      result['orderId'], result['transactionId'], result['amount']);
 }
 
 class _AppSwitchState {
-  final _channel = const MethodChannel('flutter_mobilepay_payment');
   final _mutex = Mutex();
   String _merchantId;
   Country _country;
@@ -65,6 +78,10 @@ class _AppSwitchState {
   Future<Map<dynamic, dynamic>> pay(String merchantId, Country country,
           CaptureType captureType, String orderId, double amount) =>
       _lock(_mutex, () async {
+        if (await incompletePayment() != null) {
+          throw StateError(
+              'A payment is awaiting completion. Please call complete() on the payment when the processing of the payment has been completed, and check incompletePayment() to see if any pending incomplete payments needs to be completed.');
+        }
         if (_merchantId != merchantId ||
             _country != country ||
             _captureType == captureType) {
@@ -98,7 +115,7 @@ class AppSwitchPayment {
         _captureType = captureType;
 
   Future<PaymentResult> pay(String orderId, double amount) async {
-    Map<dynamic, dynamic> result =
+    final result =
         await _state.pay(_merchantId, _country, _captureType, orderId, amount);
     bool completed = result["completed"];
     if (!completed && result.containsKey("errorCode")) {
@@ -111,7 +128,7 @@ class AppSwitchPayment {
     if (!completed) {
       return null;
     }
-    return PaymentResult(result["transactionId"], result["amount"]);
+    return PaymentResult(orderId, result["transactionId"], result["amount"]);
   }
 }
 

@@ -9,15 +9,17 @@ import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import dk.danskebank.mobilepay.sdk.*
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.util.Log
 import dk.danskebank.mobilepay.sdk.model.FailureResult
 import dk.danskebank.mobilepay.sdk.model.Payment
 import dk.danskebank.mobilepay.sdk.model.SuccessResult
 import java.math.BigDecimal
 
-val LogTag = "MobilePayPaymentPlugin"
-val RequestCode: Int = 1513201027
+const val LogTag = "MobilePayPaymentPlugin"
+const val RequestCode: Int = 1513201027
 
 class FlutterMobilepayPaymentPlugin(private val activity: Activity): MethodCallHandler, ActivityResultListener {
   private var payResult: Result? = null
@@ -31,6 +33,9 @@ class FlutterMobilepayPaymentPlugin(private val activity: Activity): MethodCallH
       channel.setMethodCallHandler(plugin)
     }
   }
+
+  private var mobilePayAppSwitchIncompletePayment: SharedPreferences = activity.applicationContext
+          .getSharedPreferences("mobilePayAppSwitchIncompletePayment", Context.MODE_PRIVATE)
 
   override fun onMethodCall(call: MethodCall, result: Result) = when (call.method) {
     "init" -> {
@@ -54,7 +59,7 @@ class FlutterMobilepayPaymentPlugin(private val activity: Activity): MethodCallH
         setCaptureType(captureType)
       }
       Log.d(LogTag,
-              "MobilePay initialized with merchant ID ${merchantId} and capture type ${captureType}.")
+              "MobilePay initialized with merchant ID $merchantId and capture type $captureType.")
       result.success(null)
     }
     "pay" -> {
@@ -69,7 +74,7 @@ class FlutterMobilepayPaymentPlugin(private val activity: Activity): MethodCallH
         }
         val payment = Payment().apply {
           setOrderId(orderId)
-          setProductPrice(BigDecimal(amount))
+          productPrice = BigDecimal(amount)
         }
         val payIntent = instance.createPaymentIntent(payment)
         activity.startActivityForResult(payIntent, RequestCode)
@@ -82,6 +87,27 @@ class FlutterMobilepayPaymentPlugin(private val activity: Activity): MethodCallH
           "completed" to false
         ))
       }
+    }
+    "incompletePayment" -> {
+      if (!mobilePayAppSwitchIncompletePayment.contains("orderId")) {
+        result.success(null)
+      }
+      else {
+        result.success(mapOf(
+                "orderId" to mobilePayAppSwitchIncompletePayment.getString("orderId", null),
+                "transactionId" to mobilePayAppSwitchIncompletePayment.getString("transactionId", null),
+                "amount" to mobilePayAppSwitchIncompletePayment.getFloat("amount", 0.0f).toDouble()
+        ))
+      }
+    }
+    "paymentComplete" -> {
+      mobilePayAppSwitchIncompletePayment
+              .edit()
+              .remove("orderId")
+              .remove("transactionId")
+              .remove("amount")
+              .apply()
+      result.success(null)
     }
     else -> result.notImplemented()
   }
@@ -99,6 +125,12 @@ class FlutterMobilepayPaymentPlugin(private val activity: Activity): MethodCallH
     MobilePay.getInstance().handleResult(resultCode, data, object: ResultCallback {
       override fun onSuccess(res: SuccessResult) {
         Log.d(LogTag, "MobilePay AppSwitch payment succeeded.")
+        mobilePayAppSwitchIncompletePayment
+                .edit()
+                .putString("orderId", res.orderId)
+                .putString("transactionId", res.transactionId)
+                .putFloat("amount", res.amountWithdrawnFromCard.toFloat())
+                .apply()
         result.success(mapOf (
           "completed" to true,
           "transactionId" to res.transactionId,

@@ -8,7 +8,7 @@ Only Android support for now.
 
 ## Usage
 
-Install the package by adding the line `flutter_mobilepay_payment: ^0.0.1` to `pubspec.yaml` and run `flutter packages get`.
+Install the package by adding the line `flutter_mobilepay_payment: ^0.1.0` to `pubspec.yaml` and run `flutter packages get`.
 
 Import it in `main.dart`;
 ```dart
@@ -17,7 +17,7 @@ import 'package:flutter_mobilepay_payment/flutter_mobilepay_payment.dart';
 
 and once in your app, initialize a `AppSwitchPayment` instance:
 ```dart
-void main() => runApp(new MyApp());
+void main() => runApp(MyApp());
 
 class MyApp extends StatefulWidget {
   static AppSwitchPayment _mobilePay = AppSwitchPayment(
@@ -25,7 +25,7 @@ class MyApp extends StatefulWidget {
       captureType: CaptureType.Reserve);
 
   @override
-  _MyAppState createState() => new _MyAppState(_mobilePay);
+  _MyAppState createState() => _MyAppState(_mobilePay);
 }
 ```
 
@@ -37,6 +37,18 @@ final payment = await mobilePay.pay("86715c57-8840-4a6f-af5f-07ee89107ece", 10.0
 If `payment` is `null`, that means that the payment was cancelled, i.e. the user backed out.
 If an error occurs, an exception will be thrown with the corresponding [error code](https://github.com/MobilePayDev/MobilePay-AppSwitch-SDK/wiki/Error-handling).
 Otherwise, the `payment` object will contain the paid amount and the transaction ID.
+
+At this point you would want to process the payment, e.g. by sending the order ID and transaction ID to your backend. When the process completes succesfully, call
+```dart
+await payment.complete();
+```
+
+If the app fails to process the payment, or even if it crashes after returning from AppSwitch, the uncompleted payment will be accessible through
+```dart
+final payment = await incompletePayment();
+```
+
+You should check for that when your app starts, and if it is non-`null`, resume the app in the state where it is processing the payment.
 
 ## MobilePay
 
