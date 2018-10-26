@@ -55,34 +55,56 @@ class PaymentResult {
   PaymentResult(this.transactionId, this.amount);
 }
 
-class AppSwitchPayment {
-  MethodChannel _channel;
-  static Future<void> _initFuture;
+class _AppSwitchState {
+  final _channel = const MethodChannel('flutter_mobilepay_payment');
+  final _mutex = Mutex();
+  String _merchantId;
+  Country _country;
+  CaptureType _captureType;
 
-  AppSwitchPayment(String merchantId, Country country, {CaptureType captureType: CaptureType.Capture}) {
-    if(_initFuture != null) {
-      throw StateError("Multiple AppSwitchPayment instances not supported.");
-    }
-    _channel = const MethodChannel('flutter_mobilepay_payment');
-    _initFuture = _channel.invokeMethod('init', {
-      'merchantId': merchantId,
-      'country': country.index,
-      'captureType': captureType.index,
-    });
-  }
+  Future<Map<dynamic, dynamic>> pay(String merchantId, Country country,
+          CaptureType captureType, String orderId, double amount) =>
+      _lock(_mutex, () async {
+        if (_merchantId != merchantId ||
+            _country != country ||
+            _captureType == captureType) {
+          await _channel.invokeMethod('init', {
+            'merchantId': merchantId,
+            'country': country.index,
+            'captureType': captureType.index,
+          });
+          _merchantId = merchantId;
+          _country = country;
+          _captureType = captureType;
+        }
+        return await _channel.invokeMethod('pay', {
+          'orderId': orderId,
+          'amount': amount,
+        });
+      });
+}
+
+final _state = _AppSwitchState();
+
+class AppSwitchPayment {
+  final String _merchantId;
+  final Country _country;
+  final CaptureType _captureType;
+
+  AppSwitchPayment(String merchantId, Country country,
+      {CaptureType captureType: CaptureType.Capture})
+      : _merchantId = merchantId,
+        _country = country,
+        _captureType = captureType;
 
   Future<PaymentResult> pay(String orderId, double amount) async {
-    await _initFuture;
-    Map<dynamic, dynamic> result = await _channel.invokeMethod('pay', {
-      'orderId': orderId,
-      'amount': amount,
-    });
+    Map<dynamic, dynamic> result =
+        await _state.pay(_merchantId, _country, _captureType, orderId, amount);
     bool completed = result["completed"];
     if (!completed && result.containsKey("errorCode")) {
       if ([1, 4, 5, 11].contains(result["errorCode"])) {
         throw PaymentError(result["errorMessage"], result["errorCode"]);
-      }
-      else {
+      } else {
         throw PaymentException(result["errorMessage"], result["errorCode"]);
       }
     }
@@ -91,4 +113,21 @@ class AppSwitchPayment {
     }
     return PaymentResult(result["transactionId"], result["amount"]);
   }
+}
+
+class Mutex {
+  Future<void> _future;
+}
+
+typedef Future<T> _AsyncFn<T>();
+
+Future<T> _lock<T>(Mutex m, _AsyncFn<T> fn) async {
+  if (m._future != null) {
+    try {
+      await m._future;
+    } catch (e) {}
+  }
+  final f = fn();
+  m._future = f;
+  return await f;
 }

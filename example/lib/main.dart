@@ -3,27 +3,23 @@ import 'dart:async';
 
 import 'package:flutter_mobilepay_payment/flutter_mobilepay_payment.dart';
 
-void main() => runApp(new MyApp());
+void main() => runApp(MyApp());
 
 class MyApp extends StatefulWidget {
-  static AppSwitchPayment _mobilePay = AppSwitchPayment(
-      "APPDK0000000000",
-      Country.Denmark,
-      captureType: CaptureType.Reserve);
-
   @override
-  _MyAppState createState() => new _MyAppState(_mobilePay);
+  _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  AppSwitchPayment mobilePay;
+  CaptureType _captureType = CaptureType.Reserve;
   String _status = "Ready";
-
-  _MyAppState(this.mobilePay);
 
   Future<void> pay() async {
     try {
-      final payment = await mobilePay.pay("86715c57-8840-4a6f-af5f-07ee89107ece", 10.0);
+      final mobilePay = AppSwitchPayment("APPDK0000000000", Country.Denmark,
+          captureType: _captureType);
+      final payment =
+          await mobilePay.pay("86715c57-8840-4a6f-af5f-07ee89107ece", 10.0);
 
       // If the widget was removed from the tree while the asynchronous platform
       // message was in flight, we want to discard the reply rather than calling
@@ -35,7 +31,8 @@ class _MyAppState extends State<MyApp> {
       }
 
       setState(() {
-        _status = "Payment completed (ref. ${payment.transactionId.substring(0, 8)}).";
+        _status =
+            "Payment completed (ref. ${payment.transactionId.substring(0, 8)}).";
       });
     } on PaymentError catch (e) {
       if (!mounted) return;
@@ -43,6 +40,12 @@ class _MyAppState extends State<MyApp> {
         _status = "Payment error: ${e.message} (code ${e.errorCode}).";
       });
     }
+  }
+
+  void _handleRadioValueChange(CaptureType value) {
+    setState(() {
+      _captureType = value;
+    });
   }
 
   @override
@@ -54,15 +57,37 @@ class _MyAppState extends State<MyApp> {
         ),
         body: Center(
           child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Text('$_status\n'),
+                Text(_status),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Radio(
+                      value: CaptureType.Capture,
+                      groupValue: _captureType,
+                      onChanged: _handleRadioValueChange,
+                    ),
+                    Text('Capture'),
+                    Radio(
+                      value: CaptureType.Reserve,
+                      groupValue: _captureType,
+                      onChanged: _handleRadioValueChange,
+                    ),
+                    Text('Reserve'),
+                    Radio(
+                      value: CaptureType.PartialCapture,
+                      groupValue: _captureType,
+                      onChanged: _handleRadioValueChange,
+                    ),
+                    Text('Partial capture'),
+                  ],
+                ),
                 FlatButton(
                   child: Text('Pay'),
                   onPressed: pay,
                 )
-              ]
-          ),
+              ]),
         ),
       ),
     );
