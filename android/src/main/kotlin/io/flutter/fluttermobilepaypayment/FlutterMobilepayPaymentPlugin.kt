@@ -39,15 +39,15 @@ class FlutterMobilepayPaymentPlugin(private val activity: Activity): MethodCallH
 
   override fun onMethodCall(call: MethodCall, result: Result) = when (call.method) {
     "init" -> {
-      val merchantId: String = call.argument("merchantId")
-      val countryIndex: Int = call.argument("country")
+      val merchantId: String = call.argument("merchantId")!!
+      val countryIndex: Int = call.argument("country")!!
       val country = when (countryIndex) {
         0 -> Country.DENMARK
         1 -> Country.FINLAND
         2 -> Country.NORWAY
         else -> throw IllegalArgumentException("Unsupported country.")
       }
-      val captureIndex: Int = call.argument("captureType")
+      val captureIndex: Int = call.argument("captureType")!!
       val captureType = when (captureIndex) {
         0 -> CaptureType.RESERVE
         1 -> CaptureType.CAPTURE
@@ -63,8 +63,8 @@ class FlutterMobilepayPaymentPlugin(private val activity: Activity): MethodCallH
       result.success(null)
     }
     "pay" -> {
-      val orderId: String = call.argument("orderId")
-      val amount: Double = call.argument("amount")
+      val orderId: String = call.argument("orderId")!!
+      val amount: Double = call.argument("amount")!!
       val instance = MobilePay.getInstance()
 
       val mobilePayIsInstalled = instance.isMobilePayInstalled(activity)

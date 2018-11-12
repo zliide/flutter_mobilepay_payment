@@ -82,6 +82,7 @@ class _AppSwitchState {
           throw StateError(
               'A payment is awaiting completion. Please call complete() on the payment when the processing of the payment has been completed, and check incompletePayment() to see if any pending incomplete payments needs to be completed.');
         }
+        ArgumentError.checkNotNull(merchantId, 'merchantId');
         if (_merchantId != merchantId ||
             _country != country ||
             _captureType == captureType) {
