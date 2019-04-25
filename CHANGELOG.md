@@ -1,11 +1,15 @@
-## 0.0.1
+## 0.2.0
 
-First release. Android support only.
+Update to Flutter v1.2 and AndroidX.
+
+## 0.1.1
+
+Update to Flutter v.0.10.
 
 ## 0.1.0
 
 Robustness by marking payment processing complete and ability to detect and resume uncompleted payments.
 
-## 0.1.1
+## 0.0.1
 
-Update to Flutter v.0.10.
+First release. Android support only.
