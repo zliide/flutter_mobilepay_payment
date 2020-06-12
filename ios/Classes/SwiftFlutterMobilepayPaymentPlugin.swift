@@ -1,6 +1,6 @@
 import Flutter
 import UIKit
-    
+
 public class SwiftFlutterMobilepayPaymentPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "flutter_mobilepay_payment", binaryMessenger: registrar.messenger())

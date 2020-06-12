@@ -1,4 +1,4 @@
-package io.flutter.fluttermobilepaypayment
+package com.zliide.flutter_mobilepay_payment
 
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler

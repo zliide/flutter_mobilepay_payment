@@ -4,14 +4,19 @@ version: 0.2.0
 author: Kristoffer Vinther <kristoffer@zliide.com>
 homepage: https://github.com/zliide/flutter_mobilepay_payment
 
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+  flutter: ">=1.10.0"
+
 dependencies:
   flutter:
     sdk: flutter
 
 flutter:
   plugin:
-    androidPackage: io.flutter.fluttermobilepaypayment
-    pluginClass: FlutterMobilepayPaymentPlugin
-
-environment:
-  sdk: ">=2.1.0 <3.0.0"
+    platforms:
+      android:
+        package: com.zliide.flutter_mobilepay_payment
+        pluginClass: FlutterMobilepayPaymentPlugin
+      ios:
+        pluginClass: FlutterMobilepayPaymentPlugin
