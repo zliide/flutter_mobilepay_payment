@@ -1,3 +1,7 @@
+## 0.3.0
+
+Upgrade to Flutter v1.17.
+
 ## 0.2.0
 
 Update to Flutter v1.2 and AndroidX.
